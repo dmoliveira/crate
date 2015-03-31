@@ -123,13 +123,14 @@ public class QueryThenFetchConsumer implements Consumer {
                         orderBySymbolNotInOutput = true;
                     }
                 }
-
-                MergeProjection mergeProjection = new MergeProjection(
-                        collectSymbols,
-                        orderBy.orderBySymbols(),
-                        orderBy.reverseFlags(),
-                        orderBy.nullsFirst());
-                collectProjections.add(mergeProjection);
+                if( tableInfo.numberOfShards() > 1 ) {
+                    MergeProjection mergeProjection = new MergeProjection(
+                            collectSymbols,
+                            orderBy.orderBySymbols(),
+                            orderBy.reverseFlags(),
+                            orderBy.nullsFirst());
+                    collectProjections.add(mergeProjection);
+                }
             }
 
             boolean needFetchPhase = false;
@@ -188,7 +189,7 @@ public class QueryThenFetchConsumer implements Consumer {
             }
 
             MergeNode localMergeNode;
-            if (orderBy != null) {
+            if (orderBy != null && tableInfo.numberOfShards() > 1) {
                 localMergeNode = PlanNodeBuilder.sortedLocalMerge(
                         mergeProjections,
                         orderBy,
