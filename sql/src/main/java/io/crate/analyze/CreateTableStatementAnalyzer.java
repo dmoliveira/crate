@@ -75,7 +75,7 @@ public class CreateTableStatementAnalyzer extends DefaultTraversalVisitor<Create
         assert context.statement == null;
         context.statement = new CreateTableAnalyzedStatement(referenceInfos, fulltextAnalyzerResolver);
         TableIdent tableIdent = TableIdent.of(node.name());
-        context.statement.table(tableIdent);
+        context.statement.table(tableIdent, context.analysis.parameterContext().defaultSchema());
 
         // apply default in case it is not specified in the genericProperties,
         // if it is it will get overwritten afterwards.

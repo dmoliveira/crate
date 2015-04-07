@@ -21,14 +21,11 @@
 
 package io.crate.analyze;
 
-import io.crate.metadata.PartitionName;
+import io.crate.Constants;
 import io.crate.exceptions.SchemaUnknownException;
 import io.crate.exceptions.TableAlreadyExistsException;
 import io.crate.exceptions.TableUnknownException;
-import io.crate.metadata.ColumnIdent;
-import io.crate.metadata.FulltextAnalyzerResolver;
-import io.crate.metadata.ReferenceInfos;
-import io.crate.metadata.TableIdent;
+import io.crate.metadata.*;
 import io.crate.metadata.table.TableInfo;
 
 import javax.annotation.Nullable;
@@ -42,6 +39,7 @@ public class CreateTableAnalyzedStatement extends AbstractDDLAnalyzedStatement {
     private AnalyzedTableElements analyzedTableElements;
     private Map<String, Object> mapping;
     private ColumnIdent routingColumn;
+    private TableIdent tableIdent;
 
     public CreateTableAnalyzedStatement(ReferenceInfos referenceInfos,
                                         FulltextAnalyzerResolver fulltextAnalyzerResolver){
@@ -49,10 +47,9 @@ public class CreateTableAnalyzedStatement extends AbstractDDLAnalyzedStatement {
         this.fulltextAnalyzerResolver = fulltextAnalyzerResolver;
     }
 
-    @Override
-    public void table(TableIdent tableIdent) {
+    public void table(TableIdent tableIdent, @Nullable String defaultSchema) {
         try {
-            TableInfo existingTable = referenceInfos.getTableInfoUnsafe(tableIdent);
+            TableInfo existingTable = referenceInfos.getTableInfo(tableIdent, defaultSchema);
             // no exception thrown, table exists
             // is it an orphaned alias? allow it,
             // as it will be deleted before the actual table creation
@@ -62,14 +59,19 @@ public class CreateTableAnalyzedStatement extends AbstractDDLAnalyzedStatement {
         } catch (TableUnknownException | SchemaUnknownException e) {
             // ok, that is expected
         }
-        super.table(tableIdent); // name validated here
+
+        if (!isValidTableOrSchemaName(tableIdent.name())) {
+            throw new IllegalArgumentException(" TODO ");
+        }
+
+        this.tableIdent = tableIdent;
     }
 
     /**
      * checks if the given TableInfo has been created from an orphaned alias left from
      * an incomplete drop table on a partitioned table
      */
-    private boolean isOrphanedAlias(TableInfo table) {
+    private static boolean isOrphanedAlias(TableInfo table) {
         if (!table.isPartitioned() && table.isAlias()
                 && table.concreteIndices().length >= 1) {
 
@@ -83,7 +85,15 @@ public class CreateTableAnalyzedStatement extends AbstractDDLAnalyzedStatement {
             return isPartitionAlias;
         }
         return false;
+    }
 
+    private static boolean isValidTableOrSchemaName(String name) {
+        for (String illegalCharacter: Constants.INVALID_TABLE_NAME_CHARACTERS) {
+            if (name.contains(illegalCharacter) || name.length() == 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

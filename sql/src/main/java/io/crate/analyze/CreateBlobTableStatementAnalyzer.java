@@ -37,7 +37,9 @@ public class CreateBlobTableStatementAnalyzer extends BlobTableAnalyzer<CreateBl
     @Override
     public CreateBlobTableAnalyzedStatement visitCreateBlobTable(CreateBlobTable node, Analysis analysis) {
         CreateBlobTableAnalyzedStatement statement = new CreateBlobTableAnalyzedStatement();
-        statement.table(tableToIdent(node.name()));
+
+        // TODO:
+        // statement.table(tableToIdent(node.name()));
 
         if (node.clusteredBy().isPresent()) {
             ClusteredBy clusteredBy = node.clusteredBy().get();

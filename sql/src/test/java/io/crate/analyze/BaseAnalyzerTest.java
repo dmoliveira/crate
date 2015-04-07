@@ -310,12 +310,12 @@ public abstract class BaseAnalyzerTest extends CrateUnitTest {
 
     protected AnalyzedStatement analyze(String statement, Object[] params) {
         return analyzer.analyze(SqlParser.createStatement(statement),
-                params, new Object[0][], ReferenceInfos.DEFAULT_SCHEMA_NAME).analyzedStatement();
+                new ParameterContext(params, new Object[0][], ReferenceInfos.DEFAULT_SCHEMA_NAME)).analyzedStatement();
     }
 
     protected AnalyzedStatement analyze(String statement, Object[][] bulkArgs) {
         return analyzer.analyze(SqlParser.createStatement(statement),
-                new Object[0], bulkArgs, ReferenceInfos.DEFAULT_SCHEMA_NAME).analyzedStatement();
+                new ParameterContext(new Object[0], bulkArgs, ReferenceInfos.DEFAULT_SCHEMA_NAME)).analyzedStatement();
     }
 
     protected List<Module> getModules() {

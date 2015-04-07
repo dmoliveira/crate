@@ -22,22 +22,9 @@
 package io.crate.analyze;
 
 
-import io.crate.exceptions.TableUnknownException;
 import io.crate.metadata.ReferenceInfos;
-import io.crate.metadata.TableIdent;
-import io.crate.metadata.blob.BlobSchemaInfo;
-import io.crate.metadata.blob.BlobTableInfo;
 import io.crate.metadata.table.SchemaInfo;
-import io.crate.metadata.table.TableInfo;
 import io.crate.test.integration.CrateUnitTest;
-import org.junit.Before;
-import org.junit.Test;
-
-import static io.crate.metadata.blob.BlobSchemaInfo.NAME;
-import static org.hamcrest.core.Is.is;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class DropBlobTableAnalyzedStatementTest extends CrateUnitTest {
 
@@ -48,6 +35,8 @@ public class DropBlobTableAnalyzedStatementTest extends CrateUnitTest {
     private DropBlobTableAnalyzedStatement dropBlobTableAnalyzedStatement;
 
     private SchemaInfo schemaInfo;
+
+    /*
 
     @Before
     public void prepare() {
@@ -97,6 +86,6 @@ public class DropBlobTableAnalyzedStatementTest extends CrateUnitTest {
 
         dropBlobTableAnalyzedStatement.table(tableIdent);
     }
-
+    */
 
 }

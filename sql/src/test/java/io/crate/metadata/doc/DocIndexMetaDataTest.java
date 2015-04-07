@@ -819,7 +819,7 @@ public class DocIndexMetaDataTest extends CrateUnitTest {
             new FulltextAnalyzerResolver(clusterService, mock(IndicesAnalysisService.class))
         );
 
-        Analysis analysis = new Analysis(new ParameterContext(new Object[0], new Object[0][]));
+        Analysis analysis = new Analysis(new ParameterContext(new Object[0], new Object[0][], null));
         CreateTableAnalyzedStatement analyzedStatement = analyzer.analyze(statement, analysis);
 
         ImmutableSettings.Builder settingsBuilder = ImmutableSettings.builder()

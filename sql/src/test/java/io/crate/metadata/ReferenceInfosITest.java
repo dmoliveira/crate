@@ -25,7 +25,6 @@ import com.google.common.collect.Sets;
 import io.crate.analyze.WhereClause;
 import io.crate.integrationtests.SQLTransportIntegrationTest;
 import io.crate.metadata.doc.DocTableInfo;
-import io.crate.metadata.table.SchemaInfo;
 import io.crate.metadata.table.TableInfo;
 import io.crate.test.integration.CrateIntegrationTest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
@@ -46,6 +45,8 @@ public class ReferenceInfosITest extends SQLTransportIntegrationTest {
 
     private ReferenceInfos referenceInfos;
 
+    private static final String DEFAULT_SCHEMA = ReferenceInfos.DEFAULT_SCHEMA_NAME;
+
     @Before
     public void setUpService() {
         referenceInfos = cluster().getInstance(ReferenceInfos.class);
@@ -60,7 +61,7 @@ public class ReferenceInfosITest extends SQLTransportIntegrationTest {
                 ") clustered into 10 shards with (number_of_replicas=1)");
         ensureGreen();
 
-        DocTableInfo ti = (DocTableInfo) referenceInfos.getTableInfo(new TableIdent(null, "t1"));
+        DocTableInfo ti = (DocTableInfo) referenceInfos.getTableInfo(new TableIdent(null, "t1"), DEFAULT_SCHEMA);
         assertThat(ti.ident().name(), is("t1"));
 
         assertThat(ti.columns().size(), is(3));
@@ -92,8 +93,8 @@ public class ReferenceInfosITest extends SQLTransportIntegrationTest {
         client().admin().indices().aliases(request).actionGet();
         ensureGreen();
 
-        TableInfo terminatorTable = referenceInfos.getTableInfo(new TableIdent(null, "terminator"));
-        TableInfo entsafterTable = referenceInfos.getTableInfo(new TableIdent(null, "entsafter"));
+        TableInfo terminatorTable = referenceInfos.getTableInfo(new TableIdent(null, "terminator"), DEFAULT_SCHEMA);
+        TableInfo entsafterTable = referenceInfos.getTableInfo(new TableIdent(null, "entsafter"), DEFAULT_SCHEMA);
         assertNotNull(terminatorTable);
         assertFalse(terminatorTable.isAlias());
 
@@ -111,7 +112,7 @@ public class ReferenceInfosITest extends SQLTransportIntegrationTest {
         client().admin().indices().aliases(request).actionGet();
         ensureGreen();
 
-        TableInfo entsafterTable = referenceInfos.getTableInfo(new TableIdent(null, "entsafter"));
+        TableInfo entsafterTable = referenceInfos.getTableInfo(new TableIdent(null, "entsafter"), DEFAULT_SCHEMA);
         assertNotNull(entsafterTable);
         assertThat(entsafterTable.concreteIndices().length, is(2));
         assertThat(Arrays.asList(entsafterTable.concreteIndices()), contains("terminator", "transformer"));
@@ -120,7 +121,7 @@ public class ReferenceInfosITest extends SQLTransportIntegrationTest {
 
     @Test
     public void testNodesTable() throws Exception {
-        TableInfo ti = referenceInfos.getTableInfo(new TableIdent("sys", "nodes"));
+        TableInfo ti = referenceInfos.getTableInfo(new TableIdent("sys", "nodes"), DEFAULT_SCHEMA);
         Routing routing = ti.getRouting(null, null);
         assertTrue(routing.hasLocations());
         assertEquals(2, routing.nodes().size());
@@ -135,7 +136,7 @@ public class ReferenceInfosITest extends SQLTransportIntegrationTest {
         execute("create table t3 (id int primary key) clustered into 8 shards with(number_of_replicas=0)");
         ensureGreen();
 
-        TableInfo ti = referenceInfos.getTableInfo(new TableIdent("sys", "shards"));
+        TableInfo ti = referenceInfos.getTableInfo(new TableIdent("sys", "shards"), DEFAULT_SCHEMA);
         Routing routing = ti.getRouting(null, null);
 
         Set<String> tables = new HashSet<>();
@@ -153,10 +154,12 @@ public class ReferenceInfosITest extends SQLTransportIntegrationTest {
 
     @Test
     public void testClusterTable() throws Exception {
-        TableInfo ti = referenceInfos.getTableInfo(new TableIdent("sys", "cluster"));
+        TableInfo ti = referenceInfos.getTableInfo(new TableIdent("sys", "cluster"), DEFAULT_SCHEMA);
         assertTrue(ti.getRouting(null, null).locations().containsKey(null));
     }
 
+
+    /*
     @Test
     public void testSysSchemaTables() throws Exception {
         SchemaInfo si = referenceInfos.getSchemaInfo("sys");
@@ -174,5 +177,6 @@ public class ReferenceInfosITest extends SQLTransportIntegrationTest {
 //        assertThat(si.tableNames(), containsInAnyOrder("users"));
     }
 
+*/
 
 }

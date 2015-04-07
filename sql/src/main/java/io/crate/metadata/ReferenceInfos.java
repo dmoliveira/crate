@@ -21,8 +21,8 @@
 
 package io.crate.metadata;
 
-import io.crate.exceptions.Exceptions;
 import com.carrotsearch.hppc.cursors.ObjectCursor;
+import io.crate.exceptions.Exceptions;
 import io.crate.exceptions.SchemaUnknownException;
 import io.crate.exceptions.TableAliasSchemaException;
 import io.crate.exceptions.TableUnknownException;
@@ -42,9 +42,12 @@ import org.elasticsearch.common.inject.Inject;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.google.common.base.MoreObjects.firstNonNull;
 
 public class ReferenceInfos implements Iterable<SchemaInfo>, ClusterStateListener {
 
@@ -52,7 +55,6 @@ public class ReferenceInfos implements Iterable<SchemaInfo>, ClusterStateListene
     public static final String DEFAULT_SCHEMA_NAME = "doc";
 
     private final Map<String, SchemaInfo> builtInSchemas;
-    private final SchemaInfo defaultSchemaInfo;
     private final ClusterService clusterService;
     private final TransportPutIndexTemplateAction transportPutIndexTemplateAction;
 
@@ -63,7 +65,6 @@ public class ReferenceInfos implements Iterable<SchemaInfo>, ClusterStateListene
                           ClusterService clusterService,
                           TransportPutIndexTemplateAction transportPutIndexTemplateAction) {
         this.builtInSchemas = builtInSchemas;
-        this.defaultSchemaInfo = builtInSchemas.get(DEFAULT_SCHEMA_NAME);
         this.clusterService = clusterService;
         this.transportPutIndexTemplateAction = transportPutIndexTemplateAction;
         schemas.putAll(builtInSchemas);
@@ -71,30 +72,30 @@ public class ReferenceInfos implements Iterable<SchemaInfo>, ClusterStateListene
         clusterService.add(this);
     }
 
-    @Nullable
-    public TableInfo getTableInfo(TableIdent ident) {
-        SchemaInfo schemaInfo = getSchemaInfo(ident.schema());
-        if (schemaInfo != null) {
-            return schemaInfo.getTableInfo(ident.name());
+    public TableInfo getWritableTable(TableIdent tableIdent, @Nullable String defaultSchema) {
+        TableInfo tableInfo = getTableInfo(tableIdent, defaultSchema);
+        if (tableInfo.schemaInfo().systemSchema() || (tableInfo.isAlias() && !tableInfo.isPartitioned())) {
+            throw new UnsupportedOperationException(String.format(Locale.ENGLISH,
+                    "Writing into the read-only table %s is not supported", tableIdent));
         }
-        return null;
+        return tableInfo;
     }
 
     /**
      *
      * @param ident the table ident to get a TableInfo for
+     * @param defaultSchema schema that will be used if the TableIdent doesn't contain a schema part.
+     *                      If null the {@link #DEFAULT_SCHEMA_NAME} will be used.
      * @return an instance of TableInfo for the given ident, guaranteed to be not null
      * @throws io.crate.exceptions.SchemaUnknownException if schema given in <code>ident</code>
      *         does not exist
      * @throws io.crate.exceptions.TableUnknownException if table given in <code>ident</code> does
      *         not exist in the given schema
      */
-    public TableInfo getTableInfoUnsafe(TableIdent ident) {
+    public TableInfo getTableInfo(TableIdent ident, @Nullable String defaultSchema) {
+        SchemaInfo schemaInfo = getSchemaInfo(ident, defaultSchema);
+
         TableInfo info;
-        SchemaInfo schemaInfo = getSchemaInfo(ident.schema());
-        if (schemaInfo == null) {
-            throw new SchemaUnknownException(ident.schema());
-        }
         try {
             info = schemaInfo.getTableInfo(ident.name());
             if (info == null) {
@@ -110,13 +111,13 @@ public class ReferenceInfos implements Iterable<SchemaInfo>, ClusterStateListene
         return info;
     }
 
-    @Nullable
-    public SchemaInfo getSchemaInfo(@Nullable String schemaName) {
-        if (schemaName == null) {
-            return defaultSchemaInfo;
-        } else {
-            return schemas.get(schemaName);
+    private SchemaInfo getSchemaInfo(TableIdent ident, @Nullable String defaultSchema) {
+        String schemaName = firstNonNull(ident.schema(), firstNonNull(defaultSchema, DEFAULT_SCHEMA_NAME));
+        SchemaInfo schemaInfo = schemas.get(schemaName);
+        if (schemaInfo == null) {
+            throw new SchemaUnknownException(schemaName);
         }
+        return schemaInfo;
     }
 
     @Override

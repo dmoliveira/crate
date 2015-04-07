@@ -145,7 +145,7 @@ public class SysShardsExpressionsTest extends CrateUnitTest {
     @Test
     public void testShardInfoLookup() throws Exception {
         ReferenceInfo info = SysShardsTableInfo.INFOS.get(new ColumnIdent("id"));
-        assertEquals(info, referenceInfos.getTableInfo(SysShardsTableInfo.IDENT).getReferenceInfo(info.ident().columnIdent()));
+        assertEquals(info, referenceInfos.getTableInfo(SysShardsTableInfo.IDENT, null).getReferenceInfo(info.ident().columnIdent()));
     }
 
     @Test

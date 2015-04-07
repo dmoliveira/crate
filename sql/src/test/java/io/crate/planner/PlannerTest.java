@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import io.crate.Constants;
 import io.crate.analyze.Analyzer;
 import io.crate.analyze.BaseAnalyzerTest;
+import io.crate.analyze.ParameterContext;
 import io.crate.analyze.WhereClause;
 import io.crate.analyze.relations.PlannedAnalyzedRelation;
 import io.crate.exceptions.UnsupportedFeatureException;
@@ -251,8 +252,8 @@ public class PlannerTest extends CrateUnitTest {
     }
 
     private Plan plan(String statement) {
-        return planner.plan(analyzer.analyze(
-                SqlParser.createStatement(statement), new Object[0], new Object[0][], ReferenceInfos.DEFAULT_SCHEMA_NAME));
+        return planner.plan(analyzer.analyze(SqlParser.createStatement(statement),
+                new ParameterContext(new Object[0], new Object[0][], ReferenceInfos.DEFAULT_SCHEMA_NAME)));
     }
 
     @Test

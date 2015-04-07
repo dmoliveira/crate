@@ -26,7 +26,7 @@ import io.crate.metadata.TableIdent;
 public class CreateBlobTableAnalyzedStatement extends AbstractDDLAnalyzedStatement {
 
     public String tableName() {
-        return tableIdent.name();
+        return null; // tableIdent.name();
     }
 
     @Override
@@ -35,6 +35,6 @@ public class CreateBlobTableAnalyzedStatement extends AbstractDDLAnalyzedStateme
     }
 
     public TableIdent tableIdent() {
-        return tableIdent;
+        return null; // tableIdent;
     }
 }

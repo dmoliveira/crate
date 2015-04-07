@@ -22,28 +22,11 @@
 package io.crate.analyze;
 
 
-import io.crate.exceptions.SchemaUnknownException;
-import io.crate.exceptions.TableUnknownException;
-import io.crate.metadata.ReferenceInfos;
-import io.crate.metadata.TableIdent;
-import io.crate.metadata.doc.DocSchemaInfo;
-import io.crate.metadata.doc.DocTableInfo;
-import io.crate.metadata.sys.SysSchemaInfo;
-import io.crate.metadata.table.SchemaInfo;
-import io.crate.metadata.table.TableInfo;
 import io.crate.test.integration.CrateUnitTest;
-import org.elasticsearch.cluster.ClusterService;
-import org.junit.Before;
-import org.junit.Test;
-
-import static java.lang.String.format;
-import static org.hamcrest.core.Is.is;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class DropTableAnalyzedStatementTest extends CrateUnitTest {
+
+    /*
 
     public static final String IRRELEVANT = "Irrelevant";
 
@@ -153,4 +136,6 @@ public class DropTableAnalyzedStatementTest extends CrateUnitTest {
     private void getSchemaInfoReturns(SchemaInfo schemaInfo) {
         when(referenceInfos.getSchemaInfo(anyString())).thenReturn(schemaInfo);
     }
+
+    */
 }
